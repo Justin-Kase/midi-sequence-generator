@@ -51,3 +51,15 @@ add_executable(midigen_cli
 target_link_libraries(midigen_cli PRIVATE juce::juce_core juce::juce_audio_basics)
 
 set_target_properties(midigen_cli PROPERTIES OUTPUT_NAME midigen)
+
+# Post-build: fix moduleinfo.json (remove trailing commas) and re-sign
+if (APPLE)
+    add_custom_command(TARGET MidiSequenceGenerator_VST3 POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E env PYTHONUNBUFFERED=1
+                        /usr/bin/python3 ${CMAKE_SOURCE_DIR}/scripts/fix_moduleinfo_json.py
+                        "$<TARGET_FILE_DIR:MidiSequenceGenerator_VST3>/../Resources/moduleinfo.json"
+        COMMAND codesign --force --deep --options runtime -s - "$<TARGET_FILE_DIR:MidiSequenceGenerator_VST3>/../.."
+        VERBATIM
+        COMMENT "Fixing moduleinfo.json and ad-hoc signing VST3 bundle"
+    )
+endif()

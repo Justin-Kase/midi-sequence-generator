@@ -1,4 +1,4 @@
-# MIDI Sequence Generator (VST3 + CLI)
+# MIDI Sequence Generator (VST3 + CLI) – v0.1.1
 
 A simple JUCE-based VST3 MIDI generator for Bitwig that creates step-sequenced note patterns, plus a small CLI tool to export MIDI clips.
 
