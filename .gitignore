@@ -1,0 +1,17 @@
+# Build artifacts
+/build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+*.cbp
+*.sln
+*.vcxproj*
+*.xcodeproj*
+*.xcworkspace*
+*.DS_Store
+*.user
+.vscode/
+.idea/
+
+# JUCE
+JUCE/
