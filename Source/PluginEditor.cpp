@@ -152,8 +152,8 @@ void StepGrid::paint(juce::Graphics& g) {
 }
 
 // ─── Main Editor ─────────────────────────────────────────────────────────────
-IllbombSeqGeneratorAudioProcessorEditor::IllbombSeqGeneratorAudioProcessorEditor(
-    IllbombSeqGeneratorAudioProcessor& p)
+BombSeqGeneratorAudioProcessorEditor::BombSeqGeneratorAudioProcessorEditor(
+    BombSeqGeneratorAudioProcessor& p)
 : juce::AudioProcessorEditor(&p), proc_(p)
 {
     setLookAndFeel(&laf_);
@@ -201,18 +201,18 @@ IllbombSeqGeneratorAudioProcessorEditor::IllbombSeqGeneratorAudioProcessorEditor
     startTimerHz(20);
 }
 
-IllbombSeqGeneratorAudioProcessorEditor::~IllbombSeqGeneratorAudioProcessorEditor() {
+BombSeqGeneratorAudioProcessorEditor::~BombSeqGeneratorAudioProcessorEditor() {
     setLookAndFeel(nullptr);
     stopTimer();
 }
 
-void IllbombSeqGeneratorAudioProcessorEditor::timerCallback() {
+void BombSeqGeneratorAudioProcessorEditor::timerCallback() {
     auto pattern = proc_.getStepPattern();
     int  playStep = proc_.getCurrentPlayStep();
     stepGrid_.setSteps(pattern, playStep);
 }
 
-void IllbombSeqGeneratorAudioProcessorEditor::paint(juce::Graphics& g) {
+void BombSeqGeneratorAudioProcessorEditor::paint(juce::Graphics& g) {
     // Background
     g.fillAll(Col::bg);
 
@@ -247,7 +247,7 @@ void IllbombSeqGeneratorAudioProcessorEditor::paint(juce::Graphics& g) {
     g.drawText("v0.2.0", versionBounds, juce::Justification::centredRight);
 }
 
-void IllbombSeqGeneratorAudioProcessorEditor::resized() {
+void BombSeqGeneratorAudioProcessorEditor::resized() {
     auto area = getLocalBounds().reduced(12);
 
     // Title row

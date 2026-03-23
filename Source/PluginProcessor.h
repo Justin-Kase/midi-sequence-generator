@@ -5,10 +5,10 @@
 #include <vector>
 #include <mutex>
 
-class IllbombSeqGeneratorAudioProcessor : public juce::AudioProcessor {
+class BombSeqGeneratorAudioProcessor : public juce::AudioProcessor {
 public:
-    IllbombSeqGeneratorAudioProcessor();
-    ~IllbombSeqGeneratorAudioProcessor() override = default;
+    BombSeqGeneratorAudioProcessor();
+    ~BombSeqGeneratorAudioProcessor() override = default;
 
     void prepareToPlay  (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
@@ -71,5 +71,5 @@ private:
     mutable std::mutex patternMutex_;
     std::vector<StepData> cachedPattern_;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (IllbombSeqGeneratorAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BombSeqGeneratorAudioProcessor)
 };

@@ -1,23 +1,23 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-IllbombSeqGeneratorAudioProcessor::IllbombSeqGeneratorAudioProcessor()
+BombSeqGeneratorAudioProcessor::BombSeqGeneratorAudioProcessor()
 : juce::AudioProcessor (BusesProperties().withOutput("Out", juce::AudioChannelSet::stereo(), true))
 {}
 
-void IllbombSeqGeneratorAudioProcessor::prepareToPlay (double sampleRate, int) {
+void BombSeqGeneratorAudioProcessor::prepareToPlay (double sampleRate, int) {
     sampleRate_ = sampleRate;
 }
 
-void IllbombSeqGeneratorAudioProcessor::releaseResources() {}
+void BombSeqGeneratorAudioProcessor::releaseResources() {}
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool IllbombSeqGeneratorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const {
+bool BombSeqGeneratorAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const {
     return layouts.getMainOutputChannelSet() != juce::AudioChannelSet::disabled();
 }
 #endif
 
-void IllbombSeqGeneratorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
+void BombSeqGeneratorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                                          juce::MidiBuffer& midi) {
     buffer.clear();
 
@@ -89,27 +89,27 @@ void IllbombSeqGeneratorAudioProcessor::processBlock (juce::AudioBuffer<float>& 
     }
 }
 
-std::vector<StepData> IllbombSeqGeneratorAudioProcessor::getStepPattern() const {
+std::vector<StepData> BombSeqGeneratorAudioProcessor::getStepPattern() const {
     std::lock_guard<std::mutex> lk(patternMutex_);
     return cachedPattern_;
 }
 
-juce::AudioProcessorEditor* IllbombSeqGeneratorAudioProcessor::createEditor() {
-    return new IllbombSeqGeneratorAudioProcessorEditor(*this);
+juce::AudioProcessorEditor* BombSeqGeneratorAudioProcessor::createEditor() {
+    return new BombSeqGeneratorAudioProcessorEditor(*this);
 }
 
-void IllbombSeqGeneratorAudioProcessor::getStateInformation (juce::MemoryBlock& destData) {
+void BombSeqGeneratorAudioProcessor::getStateInformation (juce::MemoryBlock& destData) {
     auto state = params_.copyState();
     if (auto xml = state.createXml())
         copyXmlToBinary(*xml, destData);
 }
 
-void IllbombSeqGeneratorAudioProcessor::setStateInformation (const void* data, int sizeInBytes) {
+void BombSeqGeneratorAudioProcessor::setStateInformation (const void* data, int sizeInBytes) {
     std::unique_ptr<juce::XmlElement> xmlState (getXmlFromBinary(data, sizeInBytes));
     if (xmlState)
         params_.replaceState(juce::ValueTree::fromXml(*xmlState));
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter() {
-    return new IllbombSeqGeneratorAudioProcessor();
+    return new BombSeqGeneratorAudioProcessor();
 }

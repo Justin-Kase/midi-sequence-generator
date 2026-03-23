@@ -4,7 +4,7 @@
 #include <BinaryData.h>
 #include "SequenceGenerator.h"
 
-class IllbombSeqGeneratorAudioProcessor;
+class BombSeqGeneratorAudioProcessor;
 
 // ─── Custom look-and-feel ─────────────────────────────────────────────────────
 class SeqLookAndFeel : public juce::LookAndFeel_V4 {
@@ -41,13 +41,13 @@ private:
 };
 
 // ─── Main editor ─────────────────────────────────────────────────────────────
-class IllbombSeqGeneratorAudioProcessorEditor
+class BombSeqGeneratorAudioProcessorEditor
     : public juce::AudioProcessorEditor,
       private juce::Timer
 {
 public:
-    explicit IllbombSeqGeneratorAudioProcessorEditor(IllbombSeqGeneratorAudioProcessor&);
-    ~IllbombSeqGeneratorAudioProcessorEditor() override;
+    explicit BombSeqGeneratorAudioProcessorEditor(BombSeqGeneratorAudioProcessor&);
+    ~BombSeqGeneratorAudioProcessorEditor() override;
 
     void paint  (juce::Graphics&) override;
     void resized() override;
@@ -55,7 +55,7 @@ public:
 private:
     void timerCallback() override;
 
-    IllbombSeqGeneratorAudioProcessor& proc_;
+    BombSeqGeneratorAudioProcessor& proc_;
     SeqLookAndFeel laf_;
 
     // Logo
@@ -82,5 +82,5 @@ private:
     std::unique_ptr<SliderAtt> stepsAtt_, swingAtt_, densityAtt_, rootAtt_, octavesAtt_, seedAtt_;
     std::unique_ptr<ComboAtt>  scaleAtt_;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(IllbombSeqGeneratorAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BombSeqGeneratorAudioProcessorEditor)
 };
