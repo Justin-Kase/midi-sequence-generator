@@ -160,7 +160,7 @@ BombSeqGeneratorAudioProcessorEditor::BombSeqGeneratorAudioProcessorEditor(
 {
     setLookAndFeel(&laf_);
     setResizable(true, true);
-    setSize(580, 345);
+    setSize(580, 380);
 
     auto& params = proc_.parameters();
 
@@ -305,22 +305,19 @@ void BombSeqGeneratorAudioProcessorEditor::timerCallback() {
 }
 
 void BombSeqGeneratorAudioProcessorEditor::paint(juce::Graphics& g) {
-    // Background
     g.fillAll(Col::bg);
 
-    const int headerH = 36;
-    auto headerBounds = getLocalBounds().removeFromTop(headerH);
+    const int headerH = 44;
 
-    // Logo (top-right, matching BombSeq placement)
+    // Logo — bright white circle with the mark inside
     if (logoImage_.isValid()) {
-        const int logoSize = 26;
-        const int logoX    = getWidth() - logoSize - 12;
+        const int logoSize = 32;
+        const int logoX    = getWidth() - logoSize - 14;
         const int logoY    = (headerH - logoSize) / 2;
 
-        // Subtle white circle backing
-        g.setColour(juce::Colours::white.withAlpha(0.08f));
-        g.fillEllipse((float)(logoX - 2), (float)(logoY - 2),
-                      (float)(logoSize + 4), (float)(logoSize + 4));
+        // Bright white backing circle so the mark pops on dark bg
+        g.setColour(juce::Colours::white.withAlpha(0.90f));
+        g.fillEllipse((float)logoX, (float)logoY, (float)logoSize, (float)logoSize);
 
         g.drawImage(logoImage_, logoX, logoY, logoSize, logoSize,
                     0, 0, logoImage_.getWidth(), logoImage_.getHeight());
@@ -328,29 +325,32 @@ void BombSeqGeneratorAudioProcessorEditor::paint(juce::Graphics& g) {
 
     // Title
     g.setColour(Col::accent);
-    g.setFont(juce::Font(16.f, juce::Font::bold));
-    g.drawText("MIDI SEQ GEN", headerBounds.withTrimmedLeft(16),
+    g.setFont(juce::Font(17.f, juce::Font::bold));
+    g.drawText("Bomb Sequence Generator",
+               juce::Rectangle<int>(14, 0, getWidth() - 60, headerH),
                juce::Justification::centredLeft);
 
-    // Version (just left of the logo)
+    // Version
     g.setColour(Col::textDim);
     g.setFont(juce::Font(10.f));
-    auto versionBounds = getLocalBounds().removeFromTop(headerH).withTrimmedRight(logoImage_.isValid() ? 50 : 8);
-    g.drawText("v0.2.0", versionBounds, juce::Justification::centredRight);
+    g.drawText("v0.2.0",
+               juce::Rectangle<int>(0, 0, getWidth() - 54, headerH),
+               juce::Justification::centredRight);
 }
 
 void BombSeqGeneratorAudioProcessorEditor::resized() {
-    auto area = getLocalBounds().reduced(12);
+    const int pad = 12;
+    auto area = getLocalBounds().reduced(pad);
 
-    // Title row
-    area.removeFromTop(30);
+    // Header row (title + logo painted in paint())
+    area.removeFromTop(44);
 
     // Step grid
     stepGrid_.setBounds(area.removeFromTop(52));
     area.removeFromTop(10);
 
-    // Knob row
-    auto knobRow = area.removeFromTop(130);
+    // Knob row — 6 knobs + scale combo, equal width
+    auto knobRow = area.removeFromTop(136);
     const int knobW = knobRow.getWidth() / 7;
 
     stepsKnob_  .setBounds(knobRow.removeFromLeft(knobW));
@@ -360,16 +360,19 @@ void BombSeqGeneratorAudioProcessorEditor::resized() {
     octavesKnob_.setBounds(knobRow.removeFromLeft(knobW));
     seedKnob_   .setBounds(knobRow.removeFromLeft(knobW));
 
-    // Scale selector fills remaining width
+    // Scale selector in the last column
     auto scaleCol = knobRow;
     scaleLabel_.setBounds(scaleCol.removeFromBottom(16));
-    scaleBox_  .setBounds(scaleCol.reduced(4));
+    scaleBox_  .setBounds(scaleCol.reduced(4, 8));
 
-    // Button row: [Export MIDI]  [Randomize]  [status text]
-    area.removeFromTop(8);
-    auto exportRow = area.removeFromTop(30);
-    exportBtn_   .setBounds(exportRow.removeFromLeft(160));
-    exportRow.removeFromLeft(8);
-    randomizeBtn_.setBounds(exportRow.removeFromLeft(140));
-    exportStatus_.setBounds(exportRow.withTrimmedLeft(8));
+    // Gap
+    area.removeFromTop(12);
+
+    // Button row: [Export MIDI]  [Randomize]      [status →]
+    auto btnRow = area.removeFromTop(34);
+    exportBtn_   .setBounds(btnRow.removeFromLeft(158));
+    btnRow.removeFromLeft(10);
+    randomizeBtn_.setBounds(btnRow.removeFromLeft(150));
+    btnRow.removeFromLeft(10);
+    exportStatus_.setBounds(btnRow);
 }
