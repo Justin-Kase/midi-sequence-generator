@@ -1,5 +1,7 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
+#include <random>
+#include <chrono>
 
 // ─── Colours ──────────────────────────────────────────────────────────────────
 namespace Col {
@@ -200,6 +202,13 @@ BombSeqGeneratorAudioProcessorEditor::BombSeqGeneratorAudioProcessorEditor(
     exportBtn_.onClick = [this] { exportMidi(); };
     addAndMakeVisible(exportBtn_);
 
+    randomizeBtn_.setColour(juce::TextButton::buttonColourId,  Col::panel);
+    randomizeBtn_.setColour(juce::TextButton::buttonOnColourId, Col::play.withAlpha(0.3f));
+    randomizeBtn_.setColour(juce::TextButton::textColourOffId,  Col::play);
+    randomizeBtn_.setColour(juce::TextButton::textColourOnId,   Col::play);
+    randomizeBtn_.onClick = [this] { randomizeParams(); };
+    addAndMakeVisible(randomizeBtn_);
+
     exportStatus_.setFont(juce::Font(10.f));
     exportStatus_.setColour(juce::Label::textColourId, Col::textDim);
     exportStatus_.setJustificationType(juce::Justification::centredRight);
@@ -217,6 +226,32 @@ BombSeqGeneratorAudioProcessorEditor::BombSeqGeneratorAudioProcessorEditor(
 BombSeqGeneratorAudioProcessorEditor::~BombSeqGeneratorAudioProcessorEditor() {
     setLookAndFeel(nullptr);
     stopTimer();
+}
+
+void BombSeqGeneratorAudioProcessorEditor::randomizeParams() {
+    std::mt19937 rng((unsigned)std::chrono::steady_clock::now().time_since_epoch().count());
+
+    auto& params = proc_.parameters();
+
+    // Helper: set a parameter by name to a random value in [lo, hi]
+    auto randInt = [&](const char* id, int lo, int hi) {
+        std::uniform_int_distribution<int> d(lo, hi);
+        if (auto* p = params.getParameter(id))
+            p->setValueNotifyingHost(p->convertTo0to1((float)d(rng)));
+    };
+    auto randFloat = [&](const char* id, float lo, float hi) {
+        std::uniform_real_distribution<float> d(lo, hi);
+        if (auto* p = params.getParameter(id))
+            p->setValueNotifyingHost(p->convertTo0to1(d(rng)));
+    };
+
+    randInt  ("steps",   4,   32);
+    randFloat("swing",   0.f, 0.4f);
+    randFloat("density", 0.3f, 0.9f);
+    randInt  ("root",    48,  72);          // C3–C5
+    randInt  ("octaves", 0,   2);
+    randInt  ("scale",   0,   (int)getAllScales().size() - 1);
+    randInt  ("seed",    0,   999);
 }
 
 void BombSeqGeneratorAudioProcessorEditor::exportMidi() {
@@ -330,9 +365,11 @@ void BombSeqGeneratorAudioProcessorEditor::resized() {
     scaleLabel_.setBounds(scaleCol.removeFromBottom(16));
     scaleBox_  .setBounds(scaleCol.reduced(4));
 
-    // Export row
+    // Button row: [Export MIDI]  [Randomize]  [status text]
     area.removeFromTop(8);
     auto exportRow = area.removeFromTop(30);
-    exportBtn_.setBounds(exportRow.removeFromLeft(160));
+    exportBtn_   .setBounds(exportRow.removeFromLeft(160));
+    exportRow.removeFromLeft(8);
+    randomizeBtn_.setBounds(exportRow.removeFromLeft(140));
     exportStatus_.setBounds(exportRow.withTrimmedLeft(8));
 }

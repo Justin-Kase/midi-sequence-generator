@@ -56,6 +56,7 @@ public:
 private:
     void timerCallback() override;
     void exportMidi();
+    void randomizeParams();
 
     BombSeqGeneratorAudioProcessor& proc_;
     SeqLookAndFeel laf_;
@@ -79,9 +80,11 @@ private:
     juce::ComboBox scaleBox_;
 
     // Export button
-    juce::TextButton exportBtn_ { "⬇  Export MIDI" };
+    juce::TextButton exportBtn_    { "⬇  Export MIDI" };
     std::unique_ptr<juce::FileChooser> fileChooser_;
     juce::Label exportStatus_;
+
+    juce::TextButton randomizeBtn_ { "\xe2\x9a\x84  Randomize" };
 
     // APVTS attachments
     using SliderAtt = juce::AudioProcessorValueTreeState::SliderAttachment;
