@@ -102,11 +102,35 @@ LabelledKnob::LabelledKnob(const juce::String& name) {
     label.setJustificationType(juce::Justification::centred);
     label.setFont(juce::Font(11.f, juce::Font::bold));
     addAndMakeVisible(label);
+
+    // Lock button — small toggle in the top-right corner
+    lockBtn.setClickingTogglesState(true);
+    lockBtn.setTooltip("Lock this parameter (exclude from Randomize)");
+    lockBtn.onClick = [this] { updateLockAppearance(); repaint(); };
+    updateLockAppearance();
+    addAndMakeVisible(lockBtn);
 }
+
+void LabelledKnob::updateLockAppearance() {
+    const bool locked = lockBtn.getToggleState();
+    // Locked: bright amber. Unlocked: very dim so it doesn't distract.
+    lockBtn.setColour(juce::TextButton::buttonColourId,
+                      locked ? juce::Colour(0xFFFFD740).withAlpha(0.25f)
+                             : juce::Colour(0xFF263040));
+    lockBtn.setColour(juce::TextButton::textColourOffId,
+                      locked ? juce::Colour(0xFFFFD740) : juce::Colour(0xFF546E7A));
+    lockBtn.setColour(juce::TextButton::textColourOnId,  juce::Colour(0xFFFFD740));
+    lockBtn.setButtonText(locked ? "\xf0\x9f\x94\x92" : "\xf0\x9f\x94\x93"); // 🔒 / 🔓
+}
+
+void LabelledKnob::paint(juce::Graphics&) {}   // background handled by parent
 
 void LabelledKnob::resized() {
     auto b = getLocalBounds();
-    label .setBounds(b.removeFromBottom(16));
+    label.setBounds(b.removeFromBottom(16));
+
+    // Lock button: 18×18 top-right corner
+    lockBtn.setBounds(b.getRight() - 18, b.getY(), 18, 18);
     slider.setBounds(b);
 }
 
@@ -191,6 +215,22 @@ BombSeqGeneratorAudioProcessorEditor::BombSeqGeneratorAudioProcessorEditor(
     scaleAtt_ = std::make_unique<ComboAtt>(params, "scale", scaleBox_);
     addAndMakeVisible(scaleBox_);
 
+    // Scale lock button (mirrors the style used in LabelledKnob)
+    scaleLockBtn_.setClickingTogglesState(true);
+    scaleLockBtn_.setTooltip("Lock Scale (exclude from Randomize)");
+    auto updateScaleLock = [this] {
+        const bool locked = scaleLockBtn_.getToggleState();
+        scaleLockBtn_.setColour(juce::TextButton::buttonColourId,
+                                locked ? juce::Colour(0xFFFFD740).withAlpha(0.25f)
+                                       : juce::Colour(0xFF263040));
+        scaleLockBtn_.setColour(juce::TextButton::textColourOffId,
+                                locked ? juce::Colour(0xFFFFD740) : juce::Colour(0xFF546E7A));
+        scaleLockBtn_.setButtonText(locked ? "\xf0\x9f\x94\x92" : "\xf0\x9f\x94\x93");
+    };
+    scaleLockBtn_.onClick = updateScaleLock;
+    updateScaleLock();
+    addAndMakeVisible(scaleLockBtn_);
+
     // Step grid
     addAndMakeVisible(stepGrid_);
 
@@ -233,25 +273,27 @@ void BombSeqGeneratorAudioProcessorEditor::randomizeParams() {
 
     auto& params = proc_.parameters();
 
-    // Helper: set a parameter by name to a random value in [lo, hi]
-    auto randInt = [&](const char* id, int lo, int hi) {
+    auto randInt = [&](const char* id, int lo, int hi, bool locked) {
+        if (locked) return;
         std::uniform_int_distribution<int> d(lo, hi);
         if (auto* p = params.getParameter(id))
             p->setValueNotifyingHost(p->convertTo0to1((float)d(rng)));
     };
-    auto randFloat = [&](const char* id, float lo, float hi) {
+    auto randFloat = [&](const char* id, float lo, float hi, bool locked) {
+        if (locked) return;
         std::uniform_real_distribution<float> d(lo, hi);
         if (auto* p = params.getParameter(id))
             p->setValueNotifyingHost(p->convertTo0to1(d(rng)));
     };
 
-    randInt  ("steps",   4,   32);
-    randFloat("swing",   0.f, 0.4f);
-    randFloat("density", 0.3f, 0.9f);
-    randInt  ("root",    48,  72);          // C3–C5
-    randInt  ("octaves", 0,   2);
-    randInt  ("scale",   0,   (int)getAllScales().size() - 1);
-    randInt  ("seed",    0,   999);
+    randInt  ("steps",   4,    32,  stepsKnob_  .isLocked());
+    randFloat("swing",   0.f,  0.4f, swingKnob_  .isLocked());
+    randFloat("density", 0.3f, 0.9f, densityKnob_.isLocked());
+    randInt  ("root",    48,   72,   rootKnob_   .isLocked());
+    randInt  ("octaves", 0,    2,    octavesKnob_.isLocked());
+    randInt  ("scale",   0,    (int)getAllScales().size() - 1,
+                                     scaleLockBtn_.getToggleState());
+    randInt  ("seed",    0,    999,  seedKnob_   .isLocked());
 }
 
 void BombSeqGeneratorAudioProcessorEditor::exportMidi() {
@@ -363,7 +405,9 @@ void BombSeqGeneratorAudioProcessorEditor::resized() {
     // Scale selector in the last column
     auto scaleCol = knobRow;
     scaleLabel_.setBounds(scaleCol.removeFromBottom(16));
-    scaleBox_  .setBounds(scaleCol.reduced(4, 8));
+    // Lock button: 18×18 top-right, same position as knob lock buttons
+    scaleLockBtn_.setBounds(scaleCol.getRight() - 18, scaleCol.getY(), 18, 18);
+    scaleBox_    .setBounds(scaleCol.reduced(4, 8));
 
     // Gap
     area.removeFromTop(12);

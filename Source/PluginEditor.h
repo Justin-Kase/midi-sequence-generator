@@ -20,14 +20,22 @@ public:
     void positionComboBoxText (juce::ComboBox&, juce::Label&) override;
 };
 
-// ─── A single labelled knob ───────────────────────────────────────────────────
+// ─── A single labelled knob with an integrated lock toggle ───────────────────
 class LabelledKnob : public juce::Component {
 public:
-    juce::Slider    slider;
-    juce::Label     label;
+    juce::Slider     slider;
+    juce::Label      label;
+    juce::TextButton lockBtn { "lock" };   // public so editor can query state
 
     explicit LabelledKnob(const juce::String& name);
     void resized() override;
+    void paint   (juce::Graphics&) override;
+
+    bool isLocked() const { return lockBtn.getToggleState(); }
+
+private:
+    void updateLockAppearance();
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(LabelledKnob)
 };
 
 // ─── Step grid display ────────────────────────────────────────────────────────
@@ -67,7 +75,7 @@ private:
     // Step grid
     StepGrid stepGrid_;
 
-    // Knobs
+    // Knobs (each has a built-in lock button)
     LabelledKnob stepsKnob_   {"Steps"};
     LabelledKnob swingKnob_   {"Swing"};
     LabelledKnob densityKnob_ {"Density"};
@@ -75,16 +83,16 @@ private:
     LabelledKnob octavesKnob_ {"Octaves"};
     LabelledKnob seedKnob_    {"Seed"};
 
-    // Scale selector
-    juce::Label    scaleLabel_;
-    juce::ComboBox scaleBox_;
+    // Scale selector + its own lock
+    juce::Label      scaleLabel_;
+    juce::ComboBox   scaleBox_;
+    juce::TextButton scaleLockBtn_ { "lock" };
 
-    // Export button
-    juce::TextButton exportBtn_    { "⬇  Export MIDI" };
+    // Export / Randomize buttons
+    juce::TextButton exportBtn_    { "\xe2\xac\x87  Export MIDI" };
+    juce::TextButton randomizeBtn_ { "\xe2\x9a\x84  Randomize"  };
     std::unique_ptr<juce::FileChooser> fileChooser_;
     juce::Label exportStatus_;
-
-    juce::TextButton randomizeBtn_ { "\xe2\x9a\x84  Randomize" };
 
     // APVTS attachments
     using SliderAtt = juce::AudioProcessorValueTreeState::SliderAttachment;
